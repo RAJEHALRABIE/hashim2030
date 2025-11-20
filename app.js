@@ -35,9 +35,8 @@ function defaultState() {
       minTripsBase: 35,
       peakPercentRequired: 70,
       bonusPerTrip: 3,
-      // النسب الافتراضية حسب شروط ثرايف العامة
-      acceptRate: 65,
-      cancelRate: 10
+      acceptRate: 93,
+      cancelRate: 0
     },
     trips: [],
     activeTripStart: null
@@ -52,6 +51,7 @@ const navItems = document.querySelectorAll(".bottom-nav .nav-item");
 
 const headerAcceptRate = document.getElementById("header-accept-rate");
 const headerCancelRate = document.getElementById("header-cancel-rate");
+const currentDayInfo = document.getElementById("current-day-info");
 const currentWeekRange = document.getElementById("current-week-range");
 const newWeekBtn = document.getElementById("new-week-btn");
 
@@ -71,6 +71,9 @@ const metricPeakPercent = document.getElementById("metric-peak-percent");
 const metricPeakRequired = document.getElementById("metric-peak-required");
 const metricAcceptOfficial = document.getElementById("metric-accept-official");
 const metricCancelOfficial = document.getElementById("metric-cancel-official");
+const metricHoursDiff = document.getElementById("metric-hours-diff");
+const metricTripsDiff = document.getElementById("metric-trips-diff");
+const metricPeakDiff = document.getElementById("metric-peak-diff");
 const barHours = document.getElementById("bar-hours");
 const barTrips = document.getElementById("bar-trips");
 const barPeak = document.getElementById("bar-peak");
@@ -178,22 +181,70 @@ function playTone(type = "tap") {
 }
 
 // مواعيد الذروة (ثابتة – ميلادي فقط، لا حساب هجري)
+// وفقًا للشروط:
+// الأحد إلى الأربعاء: 6 صباحًا - 7 مساءً
+// الخميس: 6 صباحًا - 1 فجر الجمعة
+// الجمعة والسبت: 6 مساءً - 1 فجر اليوم التالي
 function isPeakTime(date) {
-  const day = date.getDay(); // 0 = Sunday, 1 = Monday,...
-  const h = date.getHours();
-  // Sun-Wed (0,1,2,3): 06:00 - 19:00
+  const d = new Date(date);
+  const day = d.getDay(); // 0 = Sunday, 1 = Monday, ...
+  const h = d.getHours(); // 0 - 23
+
+  // الأحد إلى الأربعاء (0-3): 06:00 - 19:00
   if (day >= 0 && day <= 3) {
     return h >= 6 && h < 19;
   }
-  // Thu (4): 06:00 - 01:00 (ليوم الجمعة)
-  if (day === 4) {
-    return h >= 6 || h < 1;
+
+  // الخميس: من 06:00 حتى 23:59 + امتداد إلى فجر الجمعة حتى 01:00
+  if (day === 4 && h >= 6) {
+    return true;
   }
-  // Fri & Sat (5,6): 18:00 - 01:00
-  if (day === 5 || day === 6) {
-    return h >= 18 || h < 1;
+  if (day === 5 && h < 1) {
+    // 00:00 - 00:59 من يوم الجمعة تُحسب ضمن ذروة الخميس
+    return true;
   }
+
+  // الجمعة والسبت: من 18:00 حتى 23:59
+  if ((day === 5 || day === 6) && h >= 18) {
+    return true;
+  }
+  // وامتداد إلى 01:00 فجر اليوم التالي (السبت/الأحد)
+  if ((day === 6 || day === 0) && h < 1) {
+    // 00:00 - 00:59 من يوم السبت أو الأحد تُحسب كامتداد لذروة اليوم السابق
+    return true;
+  }
+
   return false;
+}
+
+// إعادة احتساب الذروة للرحلات القديمة وفق المنطق الجديد (مرة واحدة فقط)
+function migratePeakFlagsOnce() {
+  try {
+    if (!state || !Array.isArray(state.trips)) return;
+    if (state.peakMigratedV2) return;
+
+    let changed = false;
+    state.trips = state.trips.map((t) => {
+      if (!t || !t.start) return t;
+      const startDate = new Date(t.start);
+      const newIsPeak = isPeakTime(startDate);
+      if (t.isPeak !== newIsPeak) {
+        changed = true;
+        return { ...t, isPeak: newIsPeak };
+      }
+      return t;
+    });
+
+    state.peakMigratedV2 = true;
+    if (changed) {
+      saveState(state);
+    } else {
+      // حتى لو لم تتغير القيم، نحفظ علامة الهجرة حتى لا نعيدها مرة أخرى
+      saveState(state);
+    }
+  } catch (e) {
+    // في حالة أي خطأ، لا نمنع بقية التطبيق من العمل
+  }
 }
 
 // التاريخ: بداية الأسبوع (الاثنين) ونهايته (الأحد)
@@ -330,6 +381,22 @@ function checkConditions() {
 
 // عرض الحالة
 function updateUI() {
+  // معلومات اليوم والعد التنازلي للأيام المتبقية
+  if (currentDayInfo) {
+    const today = new Date();
+    const weekEnd = new Date(state.weekEnd);
+    const dayName = today.toLocaleDateString("ar-SA", { weekday: "long" });
+    const todayStr = today.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    });
+    weekEnd.setHours(23, 59, 59, 999);
+    const diffMs = weekEnd - today;
+    const daysLeft = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+    currentDayInfo.textContent = `اليوم: ${dayName} ${todayStr} • الأيام المتبقية: ${daysLeft}`;
+  }
+
   // رأس الصفحة
   currentWeekRange.textContent = `أسبوع الحافز: ${formatDateRangeISO(
     state.weekStart,
@@ -384,6 +451,53 @@ function updateUI() {
   metricPeakRequired.textContent = state.settings.peakPercentRequired;
   metricAcceptOfficial.textContent = fmtNumber(state.settings.acceptRate || 0, 0);
   metricCancelOfficial.textContent = fmtNumber(state.settings.cancelRate || 0, 1);
+
+  // فروقات المتطلبات (تظهر باللون الأحمر عند النقص)
+  const minHours = Number(state.settings.minHours || 0);
+  const requiredTrips = cond.requiredTrips;
+  const requiredPeak = Number(state.settings.peakPercentRequired || 0);
+
+  if (metricHoursDiff) {
+    const diffHours = minHours - totalHours;
+    if (diffHours > 0.01) {
+      metricHoursDiff.textContent = `متبقي تقريبًا: ${fmtNumber(diffHours, 2)} ساعة`;
+      metricHoursDiff.className = "metric-diff bad";
+    } else if (diffHours < -0.01) {
+      metricHoursDiff.textContent = `متجاوز الحد الأدنى بـ ${fmtNumber(Math.abs(diffHours), 2)} ساعة`;
+      metricHoursDiff.className = "metric-diff ok";
+    } else {
+      metricHoursDiff.textContent = "";
+      metricHoursDiff.className = "metric-diff";
+    }
+  }
+
+  if (metricTripsDiff) {
+    const diffTrips = requiredTrips - totalTrips;
+    if (diffTrips > 0) {
+      metricTripsDiff.textContent = `متبقي: ${diffTrips} رحلة`;
+      metricTripsDiff.className = "metric-diff bad";
+    } else if (diffTrips < 0) {
+      metricTripsDiff.textContent = `متجاوز المطلوب بـ ${Math.abs(diffTrips)} رحلة`;
+      metricTripsDiff.className = "metric-diff ok";
+    } else {
+      metricTripsDiff.textContent = "";
+      metricTripsDiff.className = "metric-diff";
+    }
+  }
+
+  if (metricPeakDiff) {
+    const diffPeak = requiredPeak - totals.peakPercent;
+    if (diffPeak > 0.1) {
+      metricPeakDiff.textContent = `متبقي: ${fmtNumber(diffPeak, 1)} نقطة مئوية`;
+      metricPeakDiff.className = "metric-diff bad";
+    } else if (diffPeak < -0.1) {
+      metricPeakDiff.textContent = `متجاوز الحد بـ ${fmtNumber(Math.abs(diffPeak), 1)} نقطة مئوية`;
+      metricPeakDiff.className = "metric-diff ok";
+    } else {
+      metricPeakDiff.textContent = "";
+      metricPeakDiff.className = "metric-diff";
+    }
+  }
 
   // الأشرطة
   const hoursRatio =
@@ -871,4 +985,44 @@ openReportBtn.addEventListener("click", () => {
 });
 
 // بداية التشغيل
+migratePeakFlagsOnce();
 updateUI();
+
+
+
+// إدارة النسخ الاحتياطية من داخل الإعدادات
+const exportStateBtn = document.getElementById("export-state-btn");
+const importStateBtn = document.getElementById("import-state-btn");
+const stateJsonArea = document.getElementById("state-json-area");
+
+if (exportStateBtn && stateJsonArea) {
+  exportStateBtn.addEventListener("click", () => {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      openInfoModal("لا توجد بيانات", "لا توجد بيانات محفوظة حاليًا للتصدير.", "ℹ️");
+      return;
+    }
+    stateJsonArea.value = raw;
+    openInfoModal("تم التصدير", "تم نسخ بياناتك إلى المربع. انسخها واحتفظ بها في مكان آمن.", "✅");
+  });
+}
+
+if (importStateBtn && stateJsonArea) {
+  importStateBtn.addEventListener("click", () => {
+    const text = stateJsonArea.value.trim();
+    if (!text) {
+      openInfoModal("لا يوجد نص", "ألصق بيانات JSON في المربع قبل محاولة الاستيراد.", "⚠️");
+      return;
+    }
+    try {
+      const parsed = JSON.parse(text);
+      saveState(parsed);
+      state = parsed;
+      updateUI();
+      openInfoModal("تم الاستيراد", "تم استيراد البيانات بنجاح وتم تحديث المؤشرات.", "✅");
+    } catch (e) {
+      console.error(e);
+      openInfoModal("خطأ في الصيغة", "تعذر قراءة البيانات. تأكد من أن النص يحتوي JSON صالحًا.", "❌");
+    }
+  });
+}
