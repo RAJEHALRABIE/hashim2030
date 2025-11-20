@@ -1,23 +1,12 @@
-
 // تخزين محلي
-const STORAGE_KEY = "thrivve-tracker-v4.2-state";
+const STORAGE_KEY = CONSTANTS.STORAGE.STATE_KEY;
 
 function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
+  return safeLocalStorageGet(STORAGE_KEY);
 }
 
 function saveState(state) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch {
-    // تجاهل
-  }
+  safeLocalStorageSet(STORAGE_KEY, state);
 }
 
 // حالة افتراضية
@@ -25,27 +14,25 @@ function defaultState() {
   const now = new Date();
   const monday = getMondayOfWeek(now);
   const sunday = new Date(monday);
-  sunday.setDate(sunday.getDate() + 6);
+  
+  // ✅ التصحيح النهائي: إضافة 6 أيام ليكون الأحد
+  sunday.setDate(sunday.getDate() + 6); 
+
+  const defaultSettings = CONSTANTS.DEFAULT_BONUS_SETTINGS;
 
   return {
     weekStart: monday.toISOString(),
     weekEnd: sunday.toISOString(),
-    settings: {
-      minHours: 25,
-      minTripsBase: 35,
-      peakPercentRequired: 70,
-      bonusPerTrip: 3,
-      acceptRate: 93,
-      cancelRate: 0
-    },
+    settings: defaultSettings,
     trips: [],
-    activeTripStart: null
+    activeTripStart: null,
+    peakMigratedV2: true
   };
 }
 
 let state = loadState() || defaultState();
 
-// عناصر DOM
+// عناصر DOM (تم الاحتفاظ بجميع التعاريف)
 const screens = document.querySelectorAll(".screen");
 const navItems = document.querySelectorAll(".bottom-nav .nav-item");
 
@@ -154,70 +141,59 @@ function playTone(type = "tap") {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
 
-  let freq = 440;
-  let duration = 0.08;
-  let volume = 0.08;
-
+  let settings = CONSTANTS.AUDIO.TAP; 
   if (type === "success") {
-    freq = 760;
-    duration = 0.14;
-    volume = 0.1;
+    settings = CONSTANTS.AUDIO.SUCCESS;
   } else if (type === "error") {
-    freq = 220;
-    duration = 0.2;
-    volume = 0.14;
+    settings = CONSTANTS.AUDIO.ERROR;
   }
 
   osc.type = "sine";
-  osc.frequency.value = freq;
+  osc.frequency.value = settings.freq;
 
-  gain.gain.setValueAtTime(volume, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+  gain.gain.setValueAtTime(settings.volume, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + settings.duration);
 
   osc.connect(gain);
   gain.connect(ctx.destination);
   osc.start();
-  osc.stop(ctx.currentTime + duration);
+  osc.stop(ctx.currentTime + settings.duration);
 }
 
-// مواعيد الذروة (ثابتة – ميلادي فقط، لا حساب هجري)
-// وفقًا للشروط:
-// الأحد إلى الأربعاء: 6 صباحًا - 7 مساءً
-// الخميس: 6 صباحًا - 1 فجر الجمعة
-// الجمعة والسبت: 6 مساءً - 1 فجر اليوم التالي
+// منطق أوقات الذروة (باستخدام الثوابت)
 function isPeakTime(date) {
   const d = new Date(date);
   const day = d.getDay(); // 0 = Sunday, 1 = Monday, ...
   const h = d.getHours(); // 0 - 23
+  
+  const days = CONSTANTS.DAYS;
+  const peak = CONSTANTS.PEAK_TIMES;
 
-  // الأحد إلى الأربعاء (0-3): 06:00 - 19:00
-  if (day >= 0 && day <= 3) {
-    return h >= 6 && h < 19;
-  }
-
-  // الخميس: من 06:00 حتى 23:59 + امتداد إلى فجر الجمعة حتى 01:00
-  if (day === 4 && h >= 6) {
-    return true;
-  }
-  if (day === 5 && h < 1) {
-    // 00:00 - 00:59 من يوم الجمعة تُحسب ضمن ذروة الخميس
-    return true;
+  // 1. الأحد إلى الأربعاء (0-3): 06:00 - 19:00
+  if (day >= days.SUNDAY && day <= days.WEDNESDAY) {
+    return h >= peak.SUN_TO_WED.start && h < peak.SUN_TO_WED.end;
   }
 
-  // الجمعة والسبت: من 18:00 حتى 23:59
-  if ((day === 5 || day === 6) && h >= 18) {
+  // 2. الخميس (4): 06:00 - 01:00 فجر الجمعة
+  if (day === days.THURSDAY && h >= peak.THURSDAY.start) {
     return true;
   }
-  // وامتداد إلى 01:00 فجر اليوم التالي (السبت/الأحد)
-  if ((day === 6 || day === 0) && h < 1) {
-    // 00:00 - 00:59 من يوم السبت أو الأحد تُحسب كامتداد لذروة اليوم السابق
+  if (day === days.FRIDAY && h < peak.THURSDAY.extensionEnd) {
+    return true;
+  }
+
+  // 3. الجمعة والسبت (5 و 6): 18:00 - 01:00 فجر اليوم التالي
+  if ((day === days.FRIDAY || day === days.SATURDAY) && h >= peak.FRI_SAT.start) {
+    return true;
+  }
+  if ((day === days.SATURDAY || day === days.SUNDAY) && h < peak.FRI_SAT.extensionEnd) {
     return true;
   }
 
   return false;
 }
 
-// إعادة احتساب الذروة للرحلات القديمة وفق المنطق الجديد (مرة واحدة فقط)
+// إعادة احتساب الذروة للرحلات القديمة وفق المنطق الجديد
 function migratePeakFlagsOnce() {
   try {
     if (!state || !Array.isArray(state.trips)) return;
@@ -239,11 +215,10 @@ function migratePeakFlagsOnce() {
     if (changed) {
       saveState(state);
     } else {
-      // حتى لو لم تتغير القيم، نحفظ علامة الهجرة حتى لا نعيدها مرة أخرى
       saveState(state);
     }
   } catch (e) {
-    // في حالة أي خطأ، لا نمنع بقية التطبيق من العمل
+    console.error("Migration error:", e);
   }
 }
 
@@ -266,21 +241,6 @@ function formatDateRangeISO(startIso, endIso) {
   return `${startStr} - ${endStr}`;
 }
 
-function formatDateTimeShort(date) {
-  const d = new Date(date);
-  const dateStr = d.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "2-digit"
-  });
-  const timeStr = d.toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true
-  });
-  return `${dateStr} • ${timeStr}`;
-}
-
 function formatTimeForTable(date) {
   const d = new Date(date);
   return d.toLocaleTimeString("en-GB", {
@@ -291,7 +251,7 @@ function formatTimeForTable(date) {
 }
 
 function fmtNumber(num, digits = 2) {
-  return Number(num || 0).toFixed(digits);
+  return formatNumber(num, digits);
 }
 
 // حسابات أساسية
@@ -342,15 +302,17 @@ function computeTotals() {
   };
 }
 
+// منطق الرحلات التصاعدي
 function computeRequiredTrips() {
   const s = state.settings;
   const { totalHours } = computeTotals();
   const base = Number(s.minTripsBase || 0);
   const baseHours = Number(s.minHours || 0);
+  
   if (totalHours <= baseHours) return base;
 
   const extraHours = totalHours - baseHours;
-  const extraTrips = extraHours * 1.5;
+  const extraTrips = extraHours * CONSTANTS.DEFAULT_BONUS_SETTINGS.extraTripsPer5Hours;
   return base + Math.ceil(extraTrips);
 }
 
@@ -379,7 +341,7 @@ function checkConditions() {
   };
 }
 
-// عرض الحالة
+// عرض الحالة (يستخدم debouncedUpdateUI)
 function updateUI() {
   // معلومات اليوم والعد التنازلي للأيام المتبقية
   if (currentDayInfo) {
@@ -394,7 +356,7 @@ function updateUI() {
     weekEnd.setHours(23, 59, 59, 999);
     const diffMs = weekEnd - today;
     const daysLeft = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
-    currentDayInfo.textContent = `اليوم: ${dayName} ${todayStr} • الأيام المتبقية: ${daysLeft}`;
+    currentDayInfo.textContent = `اليوم: ${dayName} ${todayStr} • المتبقي: ${daysLeft} أيام`;
   }
 
   // رأس الصفحة
@@ -452,7 +414,7 @@ function updateUI() {
   metricAcceptOfficial.textContent = fmtNumber(state.settings.acceptRate || 0, 0);
   metricCancelOfficial.textContent = fmtNumber(state.settings.cancelRate || 0, 1);
 
-  // فروقات المتطلبات (تظهر باللون الأحمر عند النقص)
+  // فروقات المتطلبات مع اللون الأحمر للنقص
   const minHours = Number(state.settings.minHours || 0);
   const requiredTrips = cond.requiredTrips;
   const requiredPeak = Number(state.settings.peakPercentRequired || 0);
@@ -466,8 +428,8 @@ function updateUI() {
       metricHoursDiff.textContent = `متجاوز الحد الأدنى بـ ${fmtNumber(Math.abs(diffHours), 2)} ساعة`;
       metricHoursDiff.className = "metric-diff ok";
     } else {
-      metricHoursDiff.textContent = "";
-      metricHoursDiff.className = "metric-diff";
+      metricHoursDiff.textContent = "مستوفٍ للحد الأدنى";
+      metricHoursDiff.className = "metric-diff ok";
     }
   }
 
@@ -480,8 +442,8 @@ function updateUI() {
       metricTripsDiff.textContent = `متجاوز المطلوب بـ ${Math.abs(diffTrips)} رحلة`;
       metricTripsDiff.className = "metric-diff ok";
     } else {
-      metricTripsDiff.textContent = "";
-      metricTripsDiff.className = "metric-diff";
+      metricTripsDiff.textContent = "مستوفٍ للعدد المطلوب";
+      metricTripsDiff.className = "metric-diff ok";
     }
   }
 
@@ -494,8 +456,8 @@ function updateUI() {
       metricPeakDiff.textContent = `متجاوز الحد بـ ${fmtNumber(Math.abs(diffPeak), 1)} نقطة مئوية`;
       metricPeakDiff.className = "metric-diff ok";
     } else {
-      metricPeakDiff.textContent = "";
-      metricPeakDiff.className = "metric-diff";
+      metricPeakDiff.textContent = "مستوفٍ للنسبة المطلوبة";
+      metricPeakDiff.className = "metric-diff ok";
     }
   }
 
@@ -617,11 +579,11 @@ function updateUI() {
     state.trips.forEach((t, idx) => {
       const tr = document.createElement("tr");
       const payLabel =
-        t.paymentType === "cash"
+        t.paymentType === CONSTANTS.PAYMENT_TYPES.CASH
           ? "كاش"
-          : t.paymentType === "card"
+          : t.paymentType === CONSTANTS.PAYMENT_TYPES.CARD
           ? "بطاقة"
-          : t.paymentType === "mixed"
+          : t.paymentType === CONSTANTS.PAYMENT_TYPES.MIXED
           ? "مختلط"
           : "-";
       tr.innerHTML = `
@@ -736,7 +698,7 @@ statusInfoBtn.addEventListener("click", () => {
   openInfoModal("تفاصيل حالة الحافز الحالية", msg.replace(/\n/g, "\n"));
 });
 
-// زر أسبوع جديد
+// زر أسبوع جديد (لضمان نهاية الأسبوع يوم الأحد)
 newWeekBtn.addEventListener("click", () => {
   openConfirmModal(
     "بدء أسبوع حافز جديد",
@@ -746,14 +708,16 @@ newWeekBtn.addEventListener("click", () => {
       const now = new Date();
       const monday = getMondayOfWeek(now);
       const sunday = new Date(monday);
-      sunday.setDate(sunday.getDate() + 6);
+      
+      // التصحيح: إضافة 6 أيام ليكون الأحد
+      sunday.setDate(sunday.getDate() + 6); 
 
       state.weekStart = monday.toISOString();
       state.weekEnd = sunday.toISOString();
       state.trips = [];
       state.activeTripStart = null;
       saveState(state);
-      updateUI();
+      debouncedUpdateUI(); 
       playTone("success");
     }
   );
@@ -777,8 +741,8 @@ settingsForm.addEventListener("submit", (e) => {
   state.settings.cancelRate = cancelRate;
 
   saveState(state);
-  updateUI();
-  openInfoModal("تم حفظ الإعدادات", "تم تحديث شروط الحافز بناءً على القيم التي أدخلتها.", "✅");
+  debouncedUpdateUI(); 
+  openInfoModal("تم حفظ الإعدادات", CONSTANTS.SUCCESS_MESSAGES.SETTINGS_SAVED, "✅");
   playTone("success");
 });
 
@@ -787,7 +751,7 @@ startTripBtn.addEventListener("click", () => {
   if (state.activeTripStart) return;
   state.activeTripStart = new Date().toISOString();
   saveState(state);
-  updateUI();
+  debouncedUpdateUI(); 
   playTone("tap");
 });
 
@@ -805,7 +769,7 @@ function openEndTripSheet() {
   sheetTripInfo.textContent = `بداية الرحلة: ${formatDateTimeShort(start)}`;
   sheetFareInput.value = "";
   sheetCashInput.value = "";
-  setPayType("cash");
+  setPayType(CONSTANTS.PAYMENT_TYPES.CASH);
   setActiveInput("fare");
   sheetBackdrop.classList.remove("hidden");
   playTone("tap");
@@ -821,14 +785,13 @@ function setPayType(type) {
     btn.classList.toggle("active", btn.dataset.payType === type);
   });
 
-  if (type === "card") {
+  if (type === CONSTANTS.PAYMENT_TYPES.CARD) {
     sheetCashGroup.style.display = "none";
   } else {
     sheetCashGroup.style.display = "flex";
   }
 
-  // اختيار الحقل الافتراضي
-  if (type === "mixed") {
+  if (type === CONSTANTS.PAYMENT_TYPES.MIXED) {
     setActiveInput("cash");
   } else {
     setActiveInput("fare");
@@ -849,17 +812,20 @@ payTypeButtons.forEach((btn) => {
 });
 
 sheetFareInput.addEventListener("click", () => {
-  if (currentPayType !== "card" && currentPayType !== "cash" && currentPayType !== "mixed") return;
-  setActiveInput("fare");
-  playTone("tap");
+  if (currentPayType === CONSTANTS.PAYMENT_TYPES.CARD || currentPayType === CONSTANTS.PAYMENT_TYPES.CASH || currentPayType === CONSTANTS.PAYMENT_TYPES.MIXED) {
+    setActiveInput("fare");
+    playTone("tap");
+  }
 });
 
 sheetCashInput.addEventListener("click", () => {
-  if (currentPayType === "card") return;
-  setActiveInput("cash");
-  playTone("tap");
+  if (currentPayType !== CONSTANTS.PAYMENT_TYPES.CARD) {
+    setActiveInput("cash");
+    playTone("tap");
+  }
 });
 
+// لوحة الأرقام: الحقل النشط والتحديث
 sheetKeypad.addEventListener("click", (e) => {
   const key = e.target.getAttribute("data-key");
   if (!key) return;
@@ -880,7 +846,6 @@ sheetKeypad.addEventListener("click", (e) => {
     }
     return;
   }
-  // رقم
   if (val === "0") {
     inputEl.value = key;
   } else {
@@ -902,65 +867,49 @@ sheetSaveBtn.addEventListener("click", () => {
 
   const start = new Date(state.activeTripStart);
   const end = new Date();
-  let durationMinutes = (end - start) / 1000 / 60;
-  if (!isFinite(durationMinutes) || durationMinutes <= 0) {
-    durationMinutes = 1;
+  let durationMinutes = getDurationMinutes(start, end);
+
+  // التحقق من مدة الرحلة
+  if (durationMinutes < CONSTANTS.VALIDATION.MIN_DURATION_MINUTES) {
+    durationMinutes = CONSTANTS.VALIDATION.MIN_DURATION_MINUTES;
   }
 
-  let fareVal = parseFloat(sheetFareInput.value.replace(",", "."));
-  let cashVal = parseFloat(sheetCashInput.value.replace(",", "."));
+  let fareVal = Number(sheetFareInput.value) || 0;
+  let cashVal = Number(sheetCashInput.value) || 0;
 
-  if (isNaN(fareVal)) fareVal = 0;
-  if (isNaN(cashVal)) cashVal = 0;
+  // استخدام validateTripData للتحقق من الصحة
+  const validation = validateTripData(fareVal, cashVal, currentPayType);
 
-  if (currentPayType === "card") {
-    if (fareVal <= 0) {
-      openInfoModal(
-        "بيانات غير كافية",
-        "في حالة الدفع بالبطاقة فقط، يجب إدخال قيمة الرحلة الإجمالية.",
-        "⚠️"
-      );
-      playTone("error");
-      return;
-    }
-  } else if (currentPayType === "cash") {
-    if (fareVal <= 0 && cashVal > 0) {
-      fareVal = cashVal;
-    }
-    if (fareVal <= 0 && cashVal <= 0) {
-      openInfoModal(
-        "بيانات غير كافية",
-        "أدخل على الأقل قيمة واحدة: قيمة الرحلة أو الكاش المستلم.",
-        "⚠️"
-      );
-      playTone("error");
-      return;
-    }
-  } else if (currentPayType === "mixed") {
-    if (fareVal <= 0 && cashVal <= 0) {
-      openInfoModal(
-        "بيانات غير كافية",
-        "في حالة الدفع المختلط، أدخل على الأقل قيمة الكاش المستلم أو قيمة الرحلة.",
-        "⚠️"
-      );
-      playTone("error");
-      return;
-    }
-    if (fareVal <= 0 && cashVal > 0) {
-      fareVal = cashVal;
-    }
+  if (!validation.isValid) {
+    openInfoModal("خطأ في البيانات", validation.errors.join('\n'), "⚠️");
+    playTone("error");
+    return;
   }
+  
+  let finalCashCollected = 0;
+  
+  if (currentPayType === CONSTANTS.PAYMENT_TYPES.CARD) {
+      finalCashCollected = 0;
+  } else if (currentPayType === CONSTANTS.PAYMENT_TYPES.CASH) {
+      if (fareVal <= 0) fareVal = cashVal;
+      finalCashCollected = cashVal;
+  } else if (currentPayType === CONSTANTS.PAYMENT_TYPES.MIXED) {
+      if (fareVal <= 0) fareVal = cashVal;
+      finalCashCollected = cashVal;
+  }
+
+  finalCashCollected = Math.min(finalCashCollected, fareVal);
 
   const isPeak = isPeakTime(start);
 
   const trip = {
-    id: Date.now(),
+    id: generateUniqueId(),
     start: start.toISOString(),
     end: end.toISOString(),
     durationMinutes,
     fare: fareVal,
     paymentType: currentPayType,
-    cashCollected: currentPayType === "card" ? 0 : cashVal,
+    cashCollected: finalCashCollected,
     isPeak
   };
 
@@ -968,7 +917,7 @@ sheetSaveBtn.addEventListener("click", () => {
   state.activeTripStart = null;
   saveState(state);
   closeEndTripSheet();
-  updateUI();
+  debouncedUpdateUI();
   playTone("success");
 });
 
@@ -984,45 +933,8 @@ openReportBtn.addEventListener("click", () => {
   window.open(url, "_blank");
 });
 
-// بداية التشغيل
-migratePeakFlagsOnce();
-updateUI();
-
-
-
-// إدارة النسخ الاحتياطية من داخل الإعدادات
-const exportStateBtn = document.getElementById("export-state-btn");
-const importStateBtn = document.getElementById("import-state-btn");
-const stateJsonArea = document.getElementById("state-json-area");
-
-if (exportStateBtn && stateJsonArea) {
-  exportStateBtn.addEventListener("click", () => {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      openInfoModal("لا توجد بيانات", "لا توجد بيانات محفوظة حاليًا للتصدير.", "ℹ️");
-      return;
-    }
-    stateJsonArea.value = raw;
-    openInfoModal("تم التصدير", "تم نسخ بياناتك إلى المربع. انسخها واحتفظ بها في مكان آمن.", "✅");
-  });
-}
-
-if (importStateBtn && stateJsonArea) {
-  importStateBtn.addEventListener("click", () => {
-    const text = stateJsonArea.value.trim();
-    if (!text) {
-      openInfoModal("لا يوجد نص", "ألصق بيانات JSON في المربع قبل محاولة الاستيراد.", "⚠️");
-      return;
-    }
-    try {
-      const parsed = JSON.parse(text);
-      saveState(parsed);
-      state = parsed;
-      updateUI();
-      openInfoModal("تم الاستيراد", "تم استيراد البيانات بنجاح وتم تحديث المؤشرات.", "✅");
-    } catch (e) {
-      console.error(e);
-      openInfoModal("خطأ في الصيغة", "تعذر قراءة البيانات. تأكد من أن النص يحتوي JSON صالحًا.", "❌");
-    }
-  });
-}
+// 📌 [الحل النهائي]: تأكيد تحميل DOM بالكامل قبل بدء التطبيق
+document.addEventListener('DOMContentLoaded', () => {
+    migratePeakFlagsOnce(); 
+    debouncedUpdateUI(); 
+});
