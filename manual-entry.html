@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدخال بيانات من التقرير</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #1e3a8a;
+            margin-bottom: 10px;
+            font-size: 22px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 25px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .trip-entry {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .trip-number {
+            position: absolute;
+            top: -12px;
+            right: 15px;
+            background: #3b82f6;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .remove-trip {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .trips-container {
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        .summary {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .summary-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .summary-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e40af;
+        }
+
+        .help-box {
+            background: #fef3c7;
+            border: 2px solid #fbbf24;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .help-title {
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .help-text {
+            font-size: 13px;
+            color: #78350f;
+            line-height: 1.5;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 إدخال بيانات من التقرير</h1>
+        <p class="subtitle">
+            أدخل بيانات رحلاتك يدوياً من التقرير الموجود لديك.<br>
+            سيتم حفظها تلقائياً في التطبيق الجديد.
+        </p>
+
+        <div class="help-box">
+            <div class="help-title">💡 كيف تستخدم هذه الأداة؟</div>
+            <div class="help-text">
+                1. أدخل فترة الحافز (من - إلى)<br>
+                2. أدخل بيانات كل رحلة من التقرير<br>
+                3. اضغط "إضافة رحلة أخرى" لكل رحلة جديدة<br>
+                4. اضغط "حفظ جميع البيانات" في النهاية
+            </div>
+        </div>
+
+        <!-- فترة الحافز -->
+        <div class="section">
+            <div class="section-title">📅 فترة الحافز</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>تاريخ البداية (الإثنين)</label>
+                    <input type="date" id="weekStart" required>
+                </div>
+                <div class="form-group">
+                    <label>تاريخ النهاية (الأحد)</label>
+                    <input type="date" id="weekEnd" required>
+                </div>
+            </div>
+        </div>
+
+        <!-- إعدادات الحافز -->
+        <div class="section">
+            <div class="section-title">⚙️ إعدادات الحافز</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>الحد الأدنى للساعات</label>
+                    <input type="number" id="minHours" value="25" step="0.5">
+                </div>
+                <div class="form-group">
+                    <label>الحد الأدنى للرحلات</label>
+                    <input type="number" id="minTrips" value="35" step="1">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>نسبة الذروة المطلوبة (%)</label>
+                    <input type="number" id="peakPercent" value="70" step="1">
+                </div>
+                <div class="form-group">
+                    <label>قيمة الحافز لكل رحلة (ر.س)</label>
+                    <input type="number" id="bonusPerTrip" value="3" step="0.5">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>نسبة القبول (%)</label>
+                    <input type="number" id="acceptRate" value="93" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label>نسبة الإلغاء (%)</label>
+                    <input type="number" id="cancelRate" value="0" step="0.1">
+                </div>
+            </div>
+        </div>
+
+        <!-- الرحلات -->
+        <div class="section">
+            <div class="section-title">🚗 الرحلات</div>
+            
+            <div class="trips-container" id="tripsContainer">
+                <!-- سيتم إضافة الرحلات هنا -->
+            </div>
+
+            <button class="btn btn-secondary" id="addTripBtn" style="margin-top: 15px;">
+                ➕ إضافة رحلة
+            </button>
+        </div>
+
+        <!-- الملخص -->
+        <div class="summary">
+            <div class="section-title">📊 الملخص</div>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-label">عدد الرحلات</div>
+                    <div class="summary-value" id="summaryTrips">0</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">ساعات العمل</div>
+                    <div class="summary-value" id="summaryHours">0.00</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">إجمالي الدخل</div>
+                    <div class="summary-value" id="summaryIncome">0.00 ر.س</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">الحافز المتوقع</div>
+                    <div class="summary-value" id="summaryBonus">0.00 ر.س</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" id="saveBtn" style="margin-top: 20px;">
+            💾 حفظ جميع البيانات
+        </button>
+    </div>
+
+    <script>
+        const STORAGE_KEY = "thrivve-tracker-v4.2-state";
+        let tripCounter = 0;
+        let trips = [];
+
+        const tripsContainer = document.getElementById('tripsContainer');
+        const addTripBtn = document.getElementById('addTripBtn');
+        const saveBtn = document.getElementById('saveBtn');
+
+        // Add initial trip
+        addTrip();
+
+        addTripBtn.addEventListener('click', addTrip);
+        saveBtn.addEventListener('click', saveAllData);
+
+        function addTrip() {
+            tripCounter++;
+            const tripId = `trip-${tripCounter}`;
+            
+            const tripDiv = document.createElement('div');
+            tripDiv.className = 'trip-entry';
+            tripDiv.id = tripId;
+            tripDiv.innerHTML = `
+                <div class="trip-number">#${tripCounter}</div>
+                <button class="remove-trip" onclick="removeTrip('${tripId}')">×</button>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>وقت البداية</label>
+                        <input type="datetime-local" class="trip-start" required>
+                    </div>
+                    <div class="form-group">
+                        <label>وقت النهاية</label>
+                        <input type="datetime-local" class="trip-end" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>قيمة الرحلة (ر.س)</label>
+                        <input type="number" class="trip-fare" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>نوع الدفع</label>
+                        <select class="trip-payment">
+                            <option value="card">بطاقة</option>
+                            <option value="cash">كاش</option>
+                            <option value="mixed">مختلط</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الكاش المستلم (ر.س)</label>
+                        <input type="number" class="trip-cash" step="0.01" min="0" value="0">
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: flex-end;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" class="trip-peak">
+                            <span>رحلة في وقت الذروة</span>
+                        </label>
+                    </div>
+                </div>
+            `;
+
+            tripsContainer.appendChild(tripDiv);
+            updateSummary();
+        }
+
+        function removeTrip(tripId) {
+            const tripDiv = document.getElementById(tripId);
+            if (tripDiv) {
+                tripDiv.remove();
+                updateSummary();
+            }
+        }
+
+        function updateSummary() {
+            const tripElements = document.querySelectorAll('.trip-entry');
+            const bonusPerTrip = parseFloat(document.getElementById('bonusPerTrip').value) || 0;
+            
+            let totalTrips = tripElements.length;
+            let totalMinutes = 0;
+            let totalIncome = 0;
+
+            tripElements.forEach(trip => {
+                const start = trip.querySelector('.trip-start').value;
+                const end = trip.querySelector('.trip-end').value;
+                const fare = parseFloat(trip.querySelector('.trip-fare').value) || 0;
+
+                if (start && end) {
+                    const startDate = new Date(start);
+                    const endDate = new Date(end);
+                    const minutes = (endDate - startDate) / (1000 * 60);
+                    if (minutes > 0) totalMinutes += minutes;
+                }
+
+                totalIncome += fare;
+            });
+
+            const totalHours = totalMinutes / 60;
+            const expectedBonus = totalTrips * bonusPerTrip;
+
+            document.getElementById('summaryTrips').textContent = totalTrips;
+            document.getElementById('summaryHours').textContent = totalHours.toFixed(2);
+            document.getElementById('summaryIncome').textContent = totalIncome.toFixed(2) + ' ر.س';
+            document.getElementById('summaryBonus').textContent = expectedBonus.toFixed(2) + ' ر.س';
+        }
+
+        // Update summary on input changes
+        tripsContainer.addEventListener('input', updateSummary);
+        document.getElementById('bonusPerTrip').addEventListener('input', updateSummary);
+
+        function saveAllData() {
+            // Get week dates
+            const weekStart = document.getElementById('weekStart').value;
+            const weekEnd = document.getElementById('weekEnd').value;
+
+            if (!weekStart || !weekEnd) {
+                alert('الرجاء إدخال فترة الحافز');
+                return;
+            }
+
+            // Get settings
+            const settings = {
+                minHours: parseFloat(document.getElementById('minHours').value),
+                minTripsBase: parseInt(document.getElementById('minTrips').value),
+                peakPercentRequired: parseFloat(document.getElementById('peakPercent').value),
+                bonusPerTrip: parseFloat(document.getElementById('bonusPerTrip').value),
+                acceptRate: parseFloat(document.getElementById('acceptRate').value),
+                cancelRate: parseFloat(document.getElementById('cancelRate').value)
+            };
+
+            // Get all trips
+            const tripElements = document.querySelectorAll('.trip-entry');
+            const trips = [];
+
+            let hasError = false;
+
+            tripElements.forEach((tripEl, index) => {
+                const start = tripEl.querySelector('.trip-start').value;
+                const end = tripEl.querySelector('.trip-end').value;
+                const fare = parseFloat(tripEl.querySelector('.trip-fare').value);
+                const payment = tripEl.querySelector('.trip-payment').value;
+                const cash = parseFloat(tripEl.querySelector('.trip-cash').value) || 0;
+                const isPeak = tripEl.querySelector('.trip-peak').checked;
+
+                if (!start || !end || isNaN(fare)) {
+                    alert(`الرحلة #${index + 1}: يرجى إكمال جميع الحقول`);
+                    hasError = true;
+                    return;
+                }
+
+                const startDate = new Date(start);
+                const endDate = new Date(end);
+                const minutes = (endDate - startDate) / (1000 * 60);
+
+                if (minutes <= 0) {
+                    alert(`الرحلة #${index + 1}: وقت النهاية يجب أن يكون بعد وقت البداية`);
+                    hasError = true;
+                    return;
+                }
+
+                trips.push({
+                    id: Date.now() + index,
+                    start: startDate.toISOString(),
+                    end: endDate.toISOString(),
+                    durationMinutes: minutes,
+                    fare: fare,
+                    paymentType: payment,
+                    cashCollected: cash,
+                    isPeak: isPeak
+                });
+            });
+
+            if (hasError) return;
+
+            if (trips.length === 0) {
+                alert('الرجاء إضافة رحلة واحدة على الأقل');
+                return;
+            }
+
+            // Create state object
+            const state = {
+                weekStart: new Date(weekStart).toISOString(),
+                weekEnd: new Date(weekEnd + 'T23:59:59').toISOString(),
+                settings: settings,
+                trips: trips,
+                activeTripStart: null,
+                peakMigratedV2: true
+            };
+
+            // Save to localStorage
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                
+                alert(`✅ تم حفظ ${trips.length} رحلة بنجاح!\n\nسيتم فتح التطبيق الآن...`);
+                
+                // Redirect to app
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            } catch (error) {
+                alert('❌ حدث خطأ في الحفظ: ' + error.message);
+            }
+        }
+
+        // Set default dates (current week)
+        window.addEventListener('load', () => {
+            const today = new Date();
+            const day = today.getDay();
+            const diff = day === 0 ? -6 : 1 - day; // Monday
+            
+            const monday = new Date(today);
+            monday.setDate(today.getDate() + diff);
+            
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+
+            document.getElementById('weekStart').value = monday.toISOString().split('T')[0];
+            document.getElementById('weekEnd').value = sunday.toISOString().split('T')[0];
+        });
+    </script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+
 // تخزين محلي
 const STORAGE_KEY = "thrivve-tracker-v4.2-state";
 
@@ -38,8 +39,7 @@ function defaultState() {
       cancelRate: 0
     },
     trips: [],
-    activeTripStart: null,
-    peakMigratedV2: true
+    activeTripStart: null
   };
 }
 
@@ -180,44 +180,48 @@ function playTone(type = "tap") {
   osc.stop(ctx.currentTime + duration);
 }
 
-// النقطة 1: المنطق المُحدّث لأوقات الذروة
+// مواعيد الذروة (ثابتة – ميلادي فقط، لا حساب هجري)
+// وفقًا للشروط:
+// الأحد إلى الأربعاء: 6 صباحًا - 7 مساءً
+// الخميس: 6 صباحًا - 1 فجر الجمعة
+// الجمعة والسبت: 6 مساءً - 1 فجر اليوم التالي
 function isPeakTime(date) {
   const d = new Date(date);
   const day = d.getDay(); // 0 = Sunday, 1 = Monday, ...
   const h = d.getHours(); // 0 - 23
 
-  // 1. الأحد إلى الأربعاء (0-3): 06:00 (صباحاً) - 19:00 (7 مساءً)
+  // الأحد إلى الأربعاء (0-3): 06:00 - 19:00
   if (day >= 0 && day <= 3) {
     return h >= 6 && h < 19;
   }
 
-  // 2. الخميس (4): 06:00 (صباحاً) - 01:00 (فجر الجمعة)
+  // الخميس: من 06:00 حتى 23:59 + امتداد إلى فجر الجمعة حتى 01:00
   if (day === 4 && h >= 6) {
-    return true; // من 6 صباحاً حتى 23:59
+    return true;
   }
   if (day === 5 && h < 1) {
-    // 00:00 (منتصف الليل) حتى 00:59 يُحسب كذروة الخميس الممتدة
+    // 00:00 - 00:59 من يوم الجمعة تُحسب ضمن ذروة الخميس
     return true;
   }
 
-  // 3. الجمعة والسبت (5 و 6): 18:00 (6 مساءً) - 01:00 (فجر اليوم التالي)
+  // الجمعة والسبت: من 18:00 حتى 23:59
   if ((day === 5 || day === 6) && h >= 18) {
-    return true; // من 6 مساءً حتى 23:59
+    return true;
   }
-  // 4. الامتداد إلى فجر اليوم التالي
+  // وامتداد إلى 01:00 فجر اليوم التالي (السبت/الأحد)
   if ((day === 6 || day === 0) && h < 1) {
-    // 00:00 (منتصف الليل) حتى 00:59 يُحسب كامتداد لذروة اليوم السابق
+    // 00:00 - 00:59 من يوم السبت أو الأحد تُحسب كامتداد لذروة اليوم السابق
     return true;
   }
 
   return false;
 }
 
-// إعادة احتساب الذروة للرحلات القديمة وفق المنطق الجديد
+// إعادة احتساب الذروة للرحلات القديمة وفق المنطق الجديد (مرة واحدة فقط)
 function migratePeakFlagsOnce() {
   try {
     if (!state || !Array.isArray(state.trips)) return;
-    if (state.peakMigratedV2) return; // تم تفعيلها لمنع تكرار العملية
+    if (state.peakMigratedV2) return;
 
     let changed = false;
     state.trips = state.trips.map((t) => {
@@ -235,10 +239,11 @@ function migratePeakFlagsOnce() {
     if (changed) {
       saveState(state);
     } else {
+      // حتى لو لم تتغير القيم، نحفظ علامة الهجرة حتى لا نعيدها مرة أخرى
       saveState(state);
     }
   } catch (e) {
-    // تجاهل الأخطاء
+    // في حالة أي خطأ، لا نمنع بقية التطبيق من العمل
   }
 }
 
@@ -374,7 +379,7 @@ function checkConditions() {
   };
 }
 
-// النقطة 5: تحديث واجهة رأس الصفحة وعداد الأيام والفروقات
+// عرض الحالة
 function updateUI() {
   // معلومات اليوم والعد التنازلي للأيام المتبقية
   if (currentDayInfo) {
@@ -389,7 +394,7 @@ function updateUI() {
     weekEnd.setHours(23, 59, 59, 999);
     const diffMs = weekEnd - today;
     const daysLeft = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
-    currentDayInfo.textContent = `اليوم: ${dayName} ${todayStr} • المتبقي: ${daysLeft} أيام`;
+    currentDayInfo.textContent = `اليوم: ${dayName} ${todayStr} • الأيام المتبقية: ${daysLeft}`;
   }
 
   // رأس الصفحة
@@ -447,7 +452,7 @@ function updateUI() {
   metricAcceptOfficial.textContent = fmtNumber(state.settings.acceptRate || 0, 0);
   metricCancelOfficial.textContent = fmtNumber(state.settings.cancelRate || 0, 1);
 
-  // النقطة 3: فروقات المتطلبات مع اللون الأحمر للنقص
+  // فروقات المتطلبات (تظهر باللون الأحمر عند النقص)
   const minHours = Number(state.settings.minHours || 0);
   const requiredTrips = cond.requiredTrips;
   const requiredPeak = Number(state.settings.peakPercentRequired || 0);
@@ -461,8 +466,8 @@ function updateUI() {
       metricHoursDiff.textContent = `متجاوز الحد الأدنى بـ ${fmtNumber(Math.abs(diffHours), 2)} ساعة`;
       metricHoursDiff.className = "metric-diff ok";
     } else {
-      metricHoursDiff.textContent = "مستوفٍ للحد الأدنى";
-      metricHoursDiff.className = "metric-diff ok";
+      metricHoursDiff.textContent = "";
+      metricHoursDiff.className = "metric-diff";
     }
   }
 
@@ -475,8 +480,8 @@ function updateUI() {
       metricTripsDiff.textContent = `متجاوز المطلوب بـ ${Math.abs(diffTrips)} رحلة`;
       metricTripsDiff.className = "metric-diff ok";
     } else {
-      metricTripsDiff.textContent = "مستوفٍ للعدد المطلوب";
-      metricTripsDiff.className = "metric-diff ok";
+      metricTripsDiff.textContent = "";
+      metricTripsDiff.className = "metric-diff";
     }
   }
 
@@ -489,8 +494,8 @@ function updateUI() {
       metricPeakDiff.textContent = `متجاوز الحد بـ ${fmtNumber(Math.abs(diffPeak), 1)} نقطة مئوية`;
       metricPeakDiff.className = "metric-diff ok";
     } else {
-      metricPeakDiff.textContent = "مستوفٍ للنسبة المطلوبة";
-      metricPeakDiff.className = "metric-diff ok";
+      metricPeakDiff.textContent = "";
+      metricPeakDiff.className = "metric-diff";
     }
   }
 
@@ -844,20 +849,17 @@ payTypeButtons.forEach((btn) => {
 });
 
 sheetFareInput.addEventListener("click", () => {
-  if (currentPayType === "card" || currentPayType === "cash" || currentPayType === "mixed") {
-    setActiveInput("fare");
-    playTone("tap");
-  }
+  if (currentPayType !== "card" && currentPayType !== "cash" && currentPayType !== "mixed") return;
+  setActiveInput("fare");
+  playTone("tap");
 });
 
 sheetCashInput.addEventListener("click", () => {
-  if (currentPayType !== "card") {
-    setActiveInput("cash");
-    playTone("tap");
-  }
+  if (currentPayType === "card") return;
+  setActiveInput("cash");
+  playTone("tap");
 });
 
-// لوحة الأرقام: الحقل النشط والتحديث
 sheetKeypad.addEventListener("click", (e) => {
   const key = e.target.getAttribute("data-key");
   if (!key) return;
@@ -905,38 +907,49 @@ sheetSaveBtn.addEventListener("click", () => {
     durationMinutes = 1;
   }
 
-  // التحسين: قراءة الأرقام بشكل نظيف وموحد
-  let fareVal = Number(sheetFareInput.value) || 0;
-  let cashVal = Number(sheetCashInput.value) || 0;
+  let fareVal = parseFloat(sheetFareInput.value.replace(",", "."));
+  let cashVal = parseFloat(sheetCashInput.value.replace(",", "."));
 
-  // التحقق من الإدخال
-  if (fareVal <= 0 && cashVal <= 0) {
-    openInfoModal(
-      "بيانات غير كافية",
-      "الرجاء إدخال قيمة الرحلة الإجمالية، أو الكاش المستلم على الأقل.",
-      "⚠️"
-    );
-    playTone("error");
-    return;
-  }
-  
-  // منطق تجميع قيم الكاش وقيمة الرحلة حسب نوع الدفع
-  let finalCashCollected = 0;
-  
+  if (isNaN(fareVal)) fareVal = 0;
+  if (isNaN(cashVal)) cashVal = 0;
+
   if (currentPayType === "card") {
-      finalCashCollected = 0;
+    if (fareVal <= 0) {
+      openInfoModal(
+        "بيانات غير كافية",
+        "في حالة الدفع بالبطاقة فقط، يجب إدخال قيمة الرحلة الإجمالية.",
+        "⚠️"
+      );
+      playTone("error");
+      return;
+    }
   } else if (currentPayType === "cash") {
-      // إذا لم تُدخل قيمة الرحلة، افترض أنها تساوي الكاش المستلم
-      if (fareVal <= 0) fareVal = cashVal;
-      finalCashCollected = cashVal;
+    if (fareVal <= 0 && cashVal > 0) {
+      fareVal = cashVal;
+    }
+    if (fareVal <= 0 && cashVal <= 0) {
+      openInfoModal(
+        "بيانات غير كافية",
+        "أدخل على الأقل قيمة واحدة: قيمة الرحلة أو الكاش المستلم.",
+        "⚠️"
+      );
+      playTone("error");
+      return;
+    }
   } else if (currentPayType === "mixed") {
-      // إذا لم تُدخل قيمة الرحلة، افترض أنها تساوي الكاش المستلم
-      if (fareVal <= 0) fareVal = cashVal;
-      finalCashCollected = cashVal;
+    if (fareVal <= 0 && cashVal <= 0) {
+      openInfoModal(
+        "بيانات غير كافية",
+        "في حالة الدفع المختلط، أدخل على الأقل قيمة الكاش المستلم أو قيمة الرحلة.",
+        "⚠️"
+      );
+      playTone("error");
+      return;
+    }
+    if (fareVal <= 0 && cashVal > 0) {
+      fareVal = cashVal;
+    }
   }
-
-  // التأكد من أن الكاش المستلم لا يتجاوز قيمة الرحلة الإجمالية
-  finalCashCollected = Math.min(finalCashCollected, fareVal);
 
   const isPeak = isPeakTime(start);
 
@@ -947,7 +960,7 @@ sheetSaveBtn.addEventListener("click", () => {
     durationMinutes,
     fare: fareVal,
     paymentType: currentPayType,
-    cashCollected: finalCashCollected,
+    cashCollected: currentPayType === "card" ? 0 : cashVal,
     isPeak
   };
 
@@ -974,3 +987,42 @@ openReportBtn.addEventListener("click", () => {
 // بداية التشغيل
 migratePeakFlagsOnce();
 updateUI();
+
+
+
+// إدارة النسخ الاحتياطية من داخل الإعدادات
+const exportStateBtn = document.getElementById("export-state-btn");
+const importStateBtn = document.getElementById("import-state-btn");
+const stateJsonArea = document.getElementById("state-json-area");
+
+if (exportStateBtn && stateJsonArea) {
+  exportStateBtn.addEventListener("click", () => {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      openInfoModal("لا توجد بيانات", "لا توجد بيانات محفوظة حاليًا للتصدير.", "ℹ️");
+      return;
+    }
+    stateJsonArea.value = raw;
+    openInfoModal("تم التصدير", "تم نسخ بياناتك إلى المربع. انسخها واحتفظ بها في مكان آمن.", "✅");
+  });
+}
+
+if (importStateBtn && stateJsonArea) {
+  importStateBtn.addEventListener("click", () => {
+    const text = stateJsonArea.value.trim();
+    if (!text) {
+      openInfoModal("لا يوجد نص", "ألصق بيانات JSON في المربع قبل محاولة الاستيراد.", "⚠️");
+      return;
+    }
+    try {
+      const parsed = JSON.parse(text);
+      saveState(parsed);
+      state = parsed;
+      updateUI();
+      openInfoModal("تم الاستيراد", "تم استيراد البيانات بنجاح وتم تحديث المؤشرات.", "✅");
+    } catch (e) {
+      console.error(e);
+      openInfoModal("خطأ في الصيغة", "تعذر قراءة البيانات. تأكد من أن النص يحتوي JSON صالحًا.", "❌");
+    }
+  });
+}

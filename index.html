@@ -10,6 +10,7 @@
   </head>
   <body>
     <div id="app">
+      <!-- رأس التطبيق -->
       <header class="app-header">
         <div class="header-main">
           <div class="header-left">
@@ -31,7 +32,9 @@
         </div>
       </header>
 
+      <!-- المحتوى الرئيسي -->
       <main class="app-main">
+        <!-- الشاشة الرئيسية -->
         <section id="screen-home" class="screen active">
           <section class="card hero-card">
             <div class="hero-top">
@@ -171,6 +174,7 @@
           </section>
         </section>
 
+        <!-- شاشة الرحلات -->
         <section id="screen-trips" class="screen">
           <section class="card">
             <div class="card-header spaced">
@@ -180,10 +184,10 @@
               </div>
             </div>
             <div class="trip-actions">
-              <button id="start-trip-btn" class="btn btn-primary">
+              <button id="start-trip-btn" class="btn btn-primary full">
                 بدء الرحلة
               </button>
-              <button id="end-trip-btn" class="btn btn-danger disabled" disabled>
+              <button id="end-trip-btn" class="btn btn-danger full disabled" disabled>
                 إنهاء الرحلة الحالية
               </button>
             </div>
@@ -220,6 +224,7 @@
           </section>
         </section>
 
+        <!-- شاشة المحفظة -->
         <section id="screen-wallet" class="screen">
           <section class="card">
             <div class="card-header">
@@ -254,6 +259,7 @@
           </section>
         </section>
 
+        <!-- شاشة الإعدادات -->
         <section id="screen-settings" class="screen">
           <section class="card">
             <div class="card-header">
@@ -295,8 +301,32 @@
               القبول والإلغاء يمكنك تحديثها متى شئت حسب ما يظهر في تطبيق أوبر.
             </p>
           </section>
+
+          <section class="card">
+            <div class="card-header">
+              <h2>إدارة البيانات</h2>
+            </div>
+            <p class="card-note">
+              يمكنك هنا تصدير نسخة احتياطية من بياناتك أو استيرادها يدويًا عند الحاجة أو عند نقل
+              بياناتك لجهاز آخر.
+            </p>
+            <div class="form-group">
+              <button id="export-state-btn" type="button" class="btn btn-secondary full">
+                💾 تصدير البيانات إلى نص
+              </button>
+            </div>
+            <div class="form-group">
+              <textarea id="state-json-area" rows="6" class="input" style="width: 100%; resize: vertical;"></textarea>
+            </div>
+            <div class="form-group">
+              <button id="import-state-btn" type="button" class="btn btn-primary full">
+                📥 استيراد البيانات من النص أعلاه
+              </button>
+            </div>
+          </section>
         </section>
 
+        <!-- شاشة التقرير -->
         <section id="screen-report" class="screen">
           <section class="card">
             <div class="card-header">
@@ -331,6 +361,7 @@
         </section>
       </main>
 
+      <!-- شريط التنقل السفلي -->
       <nav class="bottom-nav">
         <button class="nav-item active" data-target="screen-home">
           <span class="nav-icon">🏠</span>
@@ -355,6 +386,7 @@
       </nav>
     </div>
 
+    <!-- نافذة عامة للرسائل (تنبيه / تأكيد) -->
     <div id="modal-backdrop" class="modal-backdrop hidden">
       <div class="modal-card">
         <div class="modal-icon" id="modal-icon">ℹ️</div>
@@ -370,6 +402,7 @@
       </div>
     </div>
 
+    <!-- نافذة إنهاء الرحلة (Bottom Sheet) -->
     <div id="end-trip-sheet-backdrop" class="sheet-backdrop hidden">
       <div class="sheet-panel">
         <header class="sheet-header">
@@ -411,15 +444,12 @@
             <button data-key="1">1</button>
             <button data-key="2">2</button>
             <button data-key="3">3</button>
-
             <button data-key="4">4</button>
             <button data-key="5">5</button>
             <button data-key="6">6</button>
-
             <button data-key="7">7</button>
             <button data-key="8">8</button>
             <button data-key="9">9</button>
-
             <button data-key=".">.</button>
             <button data-key="0">0</button>
             <button data-key="back">⌫</button>
@@ -433,7 +463,7 @@
       </div>
     </div>
 
-    <script src="app.js" defer></script>
+    <script src="app.js"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {

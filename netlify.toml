@@ -1,0 +1,85 @@
+# Netlify Configuration File
+# إعدادات رفع تطبيق متابع حافز ثرايف
+
+[build]
+  # لا نحتاج build command لأن التطبيق static
+  publish = "."
+  
+[build.environment]
+  # Environment variables (إن وجدت)
+  NODE_VERSION = "18"
+
+# Headers للأمان والأداء
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+
+# Headers للـ PWA
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Content-Type = "application/javascript"
+    Service-Worker-Allowed = "/"
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Headers للملفات الثابتة (CSS, JS, Images)
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Redirects للـ SPA
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Plugin للتحسينات التلقائية
+[[plugins]]
+  package = "@netlify/plugin-lighthouse"
+  
+  [plugins.inputs]
+    # تشغيل Lighthouse للتحقق من الأداء
+    output_path = "reports/lighthouse.html"
+
+# إعدادات PWA
+[context.production]
+  environment = { NODE_ENV = "production" }
+
+[context.deploy-preview]
+  environment = { NODE_ENV = "staging" }
+
+# إعدادات إضافية
+[dev]
+  # للتطوير المحلي مع Netlify Dev
+  command = "python -m http.server 8888"
+  port = 8888
+  targetPort = 8888
+  publish = "."
+  autoLaunch = true
