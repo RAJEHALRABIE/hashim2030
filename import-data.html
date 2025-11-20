@@ -1,334 +1,283 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>استيراد البيانات - متابع حافز ثرايف</title>
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: system-ui, -apple-system, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-      }
-
-      .container {
-        background: white;
-        border-radius: 20px;
-        padding: 30px;
-        max-width: 600px;
-        width: 100%;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      }
-
-      h1 {
-        color: #333;
-        margin-bottom: 10px;
-        font-size: 24px;
-      }
-
-      .subtitle {
-        color: #666;
-        margin-bottom: 30px;
-        font-size: 14px;
-      }
-
-      .card {
-        background: #f8f9fa;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 20px;
-      }
-
-      .data-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 12px 0;
-        border-bottom: 1px solid #e0e0e0;
-      }
-
-      .data-row:last-child {
-        border-bottom: none;
-      }
-
-      .label {
-        color: #666;
-        font-size: 14px;
-      }
-
-      .value {
-        font-weight: 600;
-        color: #333;
-        font-size: 16px;
-      }
-
-      .btn {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        padding: 14px 30px;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        width: 100%;
-        margin-top: 10px;
-        transition: transform 0.2s, box-shadow 0.2s;
-      }
-
-      .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-      }
-
-      .btn-secondary {
-        background: #6c757d;
-      }
-
-      .alert {
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        font-size: 14px;
-      }
-
-      .alert-success {
-        background: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-      }
-
-      .note {
-        background: #fff3cd;
-        border: 1px solid #ffc107;
-        border-radius: 8px;
-        padding: 15px;
-        margin: 15px 0;
-        font-size: 13px;
-        line-height: 1.6;
-        color: #856404;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h1>🔄 استيراد البيانات السابقة</h1>
-      <p class="subtitle">استيراد بيانات رحلاتك من التطبيق القديم</p>
-
-      <div id="alert-container"></div>
-
-      <div class="card">
-        <h3 style="margin-bottom: 15px; color: #667eea;">📊 البيانات من تقريرك</h3>
-        <div class="data-row">
-          <span class="label">فترة الحافز</span>
-          <span class="value">17 - 23 نوفمبر 2025</span>
-        </div>
-        <div class="data-row">
-          <span class="label">عدد الرحلات</span>
-          <span class="value">20 رحلة</span>
-        </div>
-        <div class="data-row">
-          <span class="label">ساعات العمل</span>
-          <span class="value">12.17 ساعة</span>
-        </div>
-        <div class="data-row">
-          <span class="label">إجمالي الدخل</span>
-          <span class="value">382.62 ر.س</span>
-        </div>
-        <div class="data-row">
-          <span class="label">الحافز المتوقع</span>
-          <span class="value">60.00 ر.س (3 ر.س × 20 رحلة)</span>
-        </div>
-        <div class="data-row">
-          <span class="label">نسبة وقت الذروة</span>
-          <span class="value">61.9%</span>
-        </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>استيراد البيانات - متابع حافز ثرايف</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+    
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    
+    .card {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .data-row:last-child {
+      border-bottom: none;
+    }
+    
+    .label {
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .value {
+      font-weight: 600;
+      color: #333;
+      font-size: 16px;
+    }
+    
+    .btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 14px 30px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-secondary {
+      background: #6c757d;
+    }
+    
+    .alert {
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .note {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #856404;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔄 استيراد البيانات السابقة</h1>
+    <p class="subtitle">استيراد بيانات رحلاتك من التطبيق القديم</p>
+    
+    <div id="alert-container"></div>
+    
+    <div class="card">
+      <h3 style="margin-bottom: 15px; color: #667eea;">📊 البيانات المستوردة</h3>
+      <div class="data-row">
+        <span class="label">فترة الحافز</span>
+        <span class="value">17 - 23 نوفمبر 2025</span>
       </div>
-      <div class="note">
-        <strong>📝 ملاحظة:</strong><br>
-        سيتم استيراد جميع الـ 20 رحلة مع تفاصيلها الكاملة (التوقيت، القيمة، نوع الدفع، الكاش المستلم)
-        من التقرير الذي في الصورة.
+      <div class="data-row">
+        <span class="label">عدد الرحلات</span>
+        <span class="value">20 رحلة</span>
       </div>
-      <button class="btn" onclick="importAllData()">✅ استيراد جميع البيانات الآن</button>
-      <button class="btn btn-secondary" onclick="goToApp()">🏠 الذهاب للتطبيق مباشرة</button>
+      <div class="data-row">
+        <span class="label">ساعات العمل</span>
+        <span class="value">52.17 ساعة</span> </div>
+      <div class="data-row">
+        <span class="label">إجمالي الدخل</span>
+        <span class="value">730.10 ر.س</span> </div>
+      <div class="data-row">
+        <span class="label">الحافز المتوقع</span>
+        <span class="value">60.00 ر.س (3 ر.س × 20 رحلة)</span>
+      </div>
+      <div class="data-row">
+        <span class="label">نسبة وقت الذروة</span>
+        <span class="value">83.5%</span> </div>
     </div>
-    <script>
-      // البيانات المستخرجة من الصورة
-      const importedData = {
-        trips: [
-          // الرحلات مرتبة حسب التقرير
-          { start: "2025-11-19T12:31:00", end: "2025-11-19T13:15:00", fare: 43.6, cashCollected: 35.00, paymentType: "cash" },
-          { start: "2025-11-19T00:15:00", end: "2025-11-19T01:35:00", fare: 19.8, cashCollected: 0, paymentType: "card" },
-          { start: "2025-11-19T00:35:00", end: "2025-11-19T01:47:00", fare: 12.8, cashCollected: 0, paymentType: "card" },
-          { start: "2025-11-19T00:47:00", end: "2025-11-19T02:32:00", fare: 29.3, cashCollected: 0, paymentType: "card" },
-          { start: "2025-11-19T02:17:00", end: "2025-11-19T02:32:00", fare: 15.6, cashCollected: 2.50, paymentType: "mixed" },
-          { start: "2025-11-19T02:32:00", end: "2025-11-19T04:32:00", fare: 119.7, cashCollected: 25.00, paymentType: "cash" },
-          { start: "2025-11-19T04:32:00", end: "2025-11-19T05:48:00", fare: 75.8, cashCollected: 41.00, paymentType: "cash" },
-          { start: "2025-11-19T05:48:00", end: "2025-11-19T06:37:00", fare: 48.9, cashCollected: 0, paymentType: "card" },
-          { start: "2025-11-19T06:37:00", end: "2025-11-19T07:13:00", fare: 36.7, cashCollected: 34.00, paymentType: "cash" },
-          { start: "2025-11-19T07:14:00", end: "2025-11-19T08:19:00", fare: 65.4, cashCollected: 0, paymentType: "card" },
-          { start: "2025-11-19T08:40:00", end: "2025-11-19T08:40:00", fare: 0.6, cashCollected: 7.91, paymentType: "cash" },
-          { start: "2025-11-19T08:40:00", end: "2025-11-19T08:47:00", fare: 7.0, cashCollected: 0, paymentType: "card" },
-          { start: "2025-11-19T08:47:00", end: "2025-11-19T09:18:00", fare: 30.4, cashCollected: 0, paymentType: "card" },
-          { start: "2025-11-19T09:18:00", end: "2025-11-19T09:36:00", fare: 17.7, cashCollected: 0, paymentType: "card" },
-          { start: "2025-11-19T09:36:00", end: "2025-11-19T10:59:00", fare: 61.5, cashCollected: 0, paymentType: "card" },
-          { start: "2025-11-19T10:37:00", end: "2025-11-19T10:59:00", fare: 21.5, cashCollected: 0, paymentType: "card" },
-          { start: "2025-11-19T10:59:00", end: "2025-11-20T12:34:00", fare: 73.7, cashCollected: 0, paymentType: "card" },
-          { start: "2025-11-20T12:12:00", end: "2025-11-20T12:34:00", fare: 21.5, cashCollected: 6.00, paymentType: "cash" },
-          { start: "2025-11-20T12:34:00", end: "2025-11-20T12:53:00", fare: 18.8, cashCollected: 0, paymentType: "card" },
-          { start: "2025-11-20T12:53:00", end: "2025-11-21T01:03:00", fare: 9.8, cashCollected: 0, paymentType: "card" }
-        ],
-        settings: {
-          minHours: 25,
-          minTripsBase: 35,
-          peakPercentRequired: 70,
-          bonusPerTrip: 3,
-          acceptRate: 93,
-          cancelRate: 0
-        },
-        weekStart: "2025-11-17T00:00:00.000Z",
-        weekEnd: "2025-11-23T23:59:59.999Z"
-      };
 
-      // منطق الذروة المُحدّث والمُدمج هنا
-      function isPeakTime(date) {
-        const d = new Date(date);
-        const day = d.getDay(); // 0 = Sunday, 1 = Monday, ...
-        const h = d.getHours(); // 0 - 23
+    <div class="note">
+      <strong>📝 ملاحظة:</strong><br>
+      سيتم استيراد جميع الـ 20 رحلة مع تفاصيلها الكاملة، وتوقع أن تظهر المؤشرات بقيمها الحقيقية فورًا في التطبيق.
+    </div>
 
-        const DAYS = { SUNDAY: 0, MONDAY: 1, WEDNESDAY: 3, THURSDAY: 4, FRIDAY: 5, SATURDAY: 6 };
+    <button class="btn" onclick="importAllData()">✅ استيراد جميع البيانات الآن</button>
+    <button class="btn btn-secondary" onclick="goToApp()">🏠 الذهاب للتطبيق مباشرة</button>
+  </div>
 
-        // 1. الأحد إلى الأربعاء (0-3): 06:00 (صباحاً) - 19:00 (7 مساءً)
-        if (day >= DAYS.SUNDAY && day <= DAYS.WEDNESDAY) {
-          return h >= 6 && h < 19;
-        }
-
-        // 2. الخميس (4): 06:00 (صباحاً) - 01:00 (فجر الجمعة)
-        if (day === DAYS.THURSDAY && h >= 6) {
-          return true;
-        }
-        if (day === DAYS.FRIDAY && h < 1) {
-          return true;
-        }
-
-        // 3. الجمعة والسبت (5 و 6): 18:00 (6 مساءً) - 01:00 (فجر اليوم التالي)
-        if ((day === DAYS.FRIDAY || day === DAYS.SATURDAY) && h >= 18) {
-          return true;
-        }
-        // 4. الامتداد إلى فجر اليوم التالي
-        if ((day === DAYS.SATURDAY || day === DAYS.SUNDAY) && h < 1) {
-          return true;
-        }
-
-        return false;
-      }
-
-      // حساب المدة
-      function calculateDuration(start, end) {
-        const startDate = new Date(start);
-        const endDate = new Date(end);
-        const diffMs = endDate - startDate;
-        return Math.max(1, diffMs / (1000 * 60));
+  <script>
+    // البيانات المستخرجة من الصورة
+    const importedData = {
+      trips: [
+        // الرحلات مرتبة حسب التقرير
+        {start: "2025-11-19T12:31:00", end: "2025-11-19T13:15:00", fare: 43.6, cashCollected: 35.00, paymentType: "cash"},
+        {start: "2025-11-19T00:15:00", end: "2025-11-19T01:35:00", fare: 19.8, cashCollected: 0, paymentType: "card"},
+        {start: "2025-11-19T00:35:00", end: "2025-11-19T01:47:00", fare: 12.8, cashCollected: 0, paymentType: "card"},
+        {start: "2025-11-19T00:47:00", end: "2025-11-19T02:32:00", fare: 29.3, cashCollected: 0, paymentType: "card"},
+        {start: "2025-11-19T02:17:00", end: "2025-11-19T02:32:00", fare: 15.6, cashCollected: 2.50, paymentType: "mixed"},
+        {start: "2025-11-19T02:32:00", end: "2025-11-19T04:32:00", fare: 119.7, cashCollected: 25.00, paymentType: "cash"},
+        {start: "2025-11-19T04:32:00", end: "2025-11-19T05:48:00", fare: 75.8, cashCollected: 41.00, paymentType: "cash"},
+        {start: "2025-11-19T05:48:00", end: "2025-11-19T06:37:00", fare: 48.9, cashCollected: 0, paymentType: "card"},
+        {start: "2025-11-19T06:37:00", end: "2025-11-19T07:13:00", fare: 36.7, cashCollected: 34.00, paymentType: "cash"},
+        {start: "2025-11-19T07:14:00", end: "2025-11-19T08:19:00", fare: 65.4, cashCollected: 0, paymentType: "card"},
+        {start: "2025-11-19T08:40:00", end: "2025-11-19T08:40:00", fare: 0.6, cashCollected: 7.91, paymentType: "cash"},
+        {start: "2025-11-19T08:40:00", end: "2025-11-19T08:47:00", fare: 7.0, cashCollected: 0, paymentType: "card"},
+        {start: "2025-11-19T08:47:00", end: "2025-11-19T09:18:00", fare: 30.4, cashCollected: 0, paymentType: "card"},
+        {start: "2025-11-19T09:18:00", end: "2025-11-19T09:36:00", fare: 17.7, cashCollected: 0, paymentType: "card"},
+        {start: "2025-11-19T09:36:00", end: "2025-11-19T10:59:00", fare: 61.5, cashCollected: 0, paymentType: "card"},
+        {start: "2025-11-19T10:37:00", end: "2025-11-19T10:59:00", fare: 21.5, cashCollected: 0, paymentType: "card"},
+        {start: "2025-11-19T10:59:00", end: "2025-11-20T12:34:00", fare: 73.7, cashCollected: 0, paymentType: "card"},
+        {start: "2025-11-20T12:12:00", end: "2025-11-20T12:34:00", fare: 21.5, cashCollected: 6.00, paymentType: "cash"},
+        {start: "2025-11-20T12:34:00", end: "2025-11-20T12:53:00", fare: 18.8, cashCollected: 0, paymentType: "card"},
+        {start: "2025-11-20T12:53:00", end: "2025-11-21T01:03:00", fare: 9.8, cashCollected: 0, paymentType: "card"}
+      ],
+      settings: {
+        minHours: 25,
+        minTripsBase: 35,
+        peakPercentRequired: 70,
+        bonusPerTrip: 3,
+        acceptRate: 93,
+        cancelRate: 0
+      },
+      weekStart: "2025-11-17T00:00:00.000Z",
+      weekEnd: "2025-11-23T23:59:59.999Z"
+    };
+    
+    // دالة تحديد وقت الذروة
+    function isPeakTime(date) {
+      const d = new Date(date);
+      const day = d.getDay();
+      const h = d.getHours();
+      
+      // الأحد - الأربعاء: 6ص - 7م
+      if (day >= 0 && day <= 3) {
+        return h >= 6 && h < 19;
       }
       
-      // 📌 دالة إضافية لمحاكاة تحديث الواجهة وتفادي مشكلة الصفر
-      function setInitialState(state) {
-        try {
-            // هذا يحاكي تحميل app.js لحساب المؤشرات
-            const totals = computeTotalsFromState(state);
-            document.getElementById('sum-trips').textContent = totals.tripCount + ' رحلة';
-            document.getElementById('sum-hours').textContent = (totals.totalHours).toFixed(2) + ' ساعة';
-            document.getElementById('sum-income').textContent = (totals.totalFare).toFixed(2) + ' ر.س';
-            
-            // ... يمكن إضافة المزيد من تحديث المؤشرات هنا
-        } catch (e) {
-            // تجاهل خطأ عدم وجود العناصر في هذه الصفحة
-        }
-      }
+      // الخميس: 6ص - 1ص الجمعة
+      if (day === 4 && h >= 6) return true;
+      if (day === 5 && h < 1) return true;
       
-      // دالة مساعدة لحساب الإجماليات (نسخة مبسطة من app.js)
-      function computeTotalsFromState(state) {
-        const trips = state.trips || [];
-        let totalMinutes = 0;
-        let totalFare = 0;
-        
-        for (const t of trips) {
-            totalMinutes += t.durationMinutes || 0;
-            totalFare += Number(t.fare || 0);
-        }
-        
-        return {
-            totalHours: totalMinutes / 60,
-            totalFare,
-            tripCount: trips.length
+      // الجمعة والسبت: 6م - 1ص
+      if ((day === 5 || day === 6) && h >= 18) return true;
+      if ((day === 6 || day === 0) && h < 1) return true;
+      
+      return false;
+    }
+    
+    // حساب المدة
+    function calculateDuration(start, end) {
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+      const diffMs = endDate - startDate;
+      return Math.max(1, diffMs / (1000 * 60));
+    }
+    
+    // استيراد البيانات
+    function importAllData() {
+      try {
+        const state = {
+          weekStart: importedData.weekStart,
+          weekEnd: importedData.weekEnd,
+          settings: importedData.settings,
+          trips: importedData.trips.map((trip, index) => ({
+            id: Date.now() + index,
+            start: trip.start,
+            end: trip.end,
+            durationMinutes: calculateDuration(trip.start, trip.end),
+            fare: trip.fare,
+            paymentType: trip.paymentType,
+            cashCollected: trip.cashCollected,
+            isPeak: isPeakTime(trip.start)
+          })),
+          activeTripStart: null,
+          peakMigratedV2: true
         };
+        
+        // حفظ في localStorage
+        localStorage.setItem('thrivve-tracker-v4.2-state', JSON.stringify(state));
+        
+        showAlert('✅ تم استيراد جميع البيانات بنجاح! (20 رحلة)\nسيتم تحويلك للتطبيق...', 'success');
+        
+        // 📌 تصحيح: إضافة تأخير قصير لمنح المتصفح وقتاً لإنهاء الحفظ
+        setTimeout(() => {
+          window.location.href = './index.html';
+        }, 500);
+        
+      } catch (error) {
+        alert('❌ خطأ في الاستيراد: ' + error.message);
+        console.error(error);
       }
-
-      // استيراد البيانات
-      function importAllData() {
-        try {
-          // التأكد من أن جميع الرحلات تحسب isPeakTime بناءً على المنطق الصحيح
-          const state = {
-            weekStart: importedData.weekStart,
-            weekEnd: importedData.weekEnd,
-            settings: importedData.settings,
-            trips: importedData.trips.map((trip, index) => ({
-              id: Date.now() + index,
-              start: trip.start,
-              end: trip.end,
-              durationMinutes: calculateDuration(trip.start, trip.end),
-              fare: trip.fare,
-              paymentType: trip.paymentType,
-              cashCollected: trip.cashCollected,
-              isPeak: isPeakTime(trip.start)
-            })),
-            activeTripStart: null,
-            peakMigratedV2: true
-          };
-
-          // حفظ في localStorage
-          localStorage.setItem('thrivve-tracker-v4.2-state', JSON.stringify(state));
-
-          showAlert('✅ تم استيراد جميع البيانات بنجاح! (20 رحلة)\nسيتم تحويلك للتطبيق...', 'success');
-          
-          // 📌 تصحيح: إضافة تأخير قصير لمنح المتصفح وقتاً لإنهاء الحفظ
-          setTimeout(() => {
-            window.location.href = './index.html';
-          }, 500); // تقليل التأخير إلى 500 مللي ثانية للتجربة
-
-        } catch (error) {
-          alert('❌ خطأ في الاستيراد: ' + error.message);
-          console.error(error);
-        }
-      }
-
-      function showAlert(message, type) {
-        const container = document.getElementById('alert-container');
-        const alert = document.createElement('div');
-        alert.className = `alert alert-${type}`;
-        alert.textContent = message;
-        alert.style.whiteSpace = 'pre-line';
-        container.innerHTML = '';
-        container.appendChild(alert);
-      }
-
-      function goToApp() {
-        window.location.href = './index.html';
-      }
-      
-      // عند تحميل الصفحة، نضمن أن البيانات المعروضة في البطاقة تعكس الـ importedData
-      document.addEventListener('DOMContentLoaded', () => {
-          setInitialState(importedData);
-      });
-    </script>
-  </body>
+    }
+    
+    function showAlert(message, type) {
+      const container = document.getElementById('alert-container');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+      alert.style.whiteSpace = 'pre-line';
+      container.innerHTML = '';
+      container.appendChild(alert);
+    }
+    
+    function goToApp() {
+      window.location.href = './index.html';
+    }
+  </script>
+</body>
 </html>
