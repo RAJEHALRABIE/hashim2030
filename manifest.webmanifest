@@ -1,10 +1,8 @@
 {
   "name": "متابع حافز ثرايف",
   "short_name": "حافز ثرايف",
-  "description": "تطبيق ويب لتتبع وتحليل شروط الحافز الأسبوعي من ثرايف بدقة وبشكل لحظي.", 
   "start_url": ".",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#020617",
   "theme_color": "#020617",
   "dir": "rtl",
