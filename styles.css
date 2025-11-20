@@ -1,4 +1,4 @@
-
+/* تم إرفاق ملف styles-improved.css بالكامل وإصلاح الخطأ الحرج فيه */
 :root {
   --bg-body: #020617;
   --bg-elevated: #020617;
@@ -402,7 +402,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 88px;
+  min-height: 105px;
 }
 
 .metric-label {
@@ -448,7 +448,7 @@ body {
   margin-top: 4px;
   height: 3px;
   border-radius: 999px;
-  background: rgba(30, 64, 175, 0.55); /* ✅ FIXED: كان kground */
+  background: rgba(30, 64, 175, 0.55);
   overflow: hidden;
 }
 
