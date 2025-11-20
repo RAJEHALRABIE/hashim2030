@@ -1,289 +1,253 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>استيراد بيانات أسبوع الحافز السابق</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>استيراد البيانات - متابع حافز ثرايف</title>
+  <style>
+    /* ... (تنسيقات CSS) ... */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #4f46e5 0%, #312e81 30%, #020617 80%);
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
-      color: #111827;
+      padding: 20px;
     }
-    .card {
-      background: #ffffff;
-      border-radius: 24px;
-      padding: 24px 22px;
+    
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 600px;
       width: 100%;
-      max-width: 640px;
-      box-shadow: 0 24px 80px rgba(15,23,42,0.55);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     }
+    
     h1 {
-      font-size: 22px;
-      margin-bottom: 4px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 24px;
     }
-    h1 span.icon { font-size: 22px; }
+    
     .subtitle {
-      font-size: 13px;
-      color: #6b7280;
-      margin-bottom: 18px;
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
     }
-    .table {
-      width: 100%;
-      border-radius: 18px;
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      overflow: hidden;
-      margin-bottom: 16px;
-    }
-    .table-header {
-      padding: 10px 14px;
-      background: #eef2ff;
-      border-bottom: 1px solid #e5e7eb;
-      font-size: 13px;
-      font-weight: 600;
-      color: #4338ca;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .table-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 14px;
-      border-bottom: 1px solid #e5e7eb;
-      font-size: 13px;
-    }
-    .table-row:last-child { border-bottom: none; }
-    .label { color: #6b7280; }
-    .value { color: #111827; font-weight: 600; }
-    .note {
-      margin-top: 8px;
-      padding: 12px 14px;
+    
+    .card {
+      background: #f8f9fa;
       border-radius: 12px;
-      background: #fffbeb;
-      border: 1px solid #fcd34d;
-      font-size: 12px;
-      color: #92400e;
-      line-height: 1.6;
+      padding: 20px;
+      margin-bottom: 20px;
     }
-    .actions {
-      margin-top: 18px;
+    
+    .data-row {
       display: flex;
-      flex-direction: column;
-      gap: 8px;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #e0e0e0;
     }
+    
+    .data-row:last-child {
+      border-bottom: none;
+    }
+    
+    .label {
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .value {
+      font-weight: 600;
+      color: #333;
+      font-size: 16px;
+    }
+    
     .btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
       border: none;
-      border-radius: 999px;
-      padding: 11px 16px;
-      font-size: 15px;
+      padding: 14px 30px;
+      border-radius: 8px;
+      font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       width: 100%;
-      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      color: #ecfdf5;
-      box-shadow: 0 14px 35px rgba(22,163,74,0.45);
-    }
-    .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 18px 40px rgba(22,163,74,0.55);
-    }
-    .btn-secondary {
-      background: #111827;
-      color: #e5e7eb;
-    }
-    .btn-secondary:hover { background: #020617; }
-    .alert {
-      margin-top: 12px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      font-size: 13px;
-    }
-    .alert-success {
-      background: #dcfce7;
-      border: 1px solid #bbf7d0;
-      color: #166534;
-    }
-    .alert-error {
-      background: #fee2e2;
-      border: 1px solid #fecaca;
-      color: #b91c1c;
-    }
-    .footer {
       margin-top: 10px;
-      font-size: 11px;
-      color: #9ca3af;
-      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.15s;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-secondary {
+      background: #6c757d;
+    }
+    
+    .alert {
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .note {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #856404;
     }
   </style>
 </head>
 <body>
-  <main class="card">
-    <h1><span class="icon">📥</span>استيراد البيانات السابقة</h1>
-    <p class="subtitle">
-      استيراد بيانات أسبوع حافز واحد فقط من التقرير القديم، لعرضه كمرجع داخل متابع حافز ثرايف.
-    </p>
+  <div class="container">
+    <h1>🔄 استيراد البيانات السابقة</h1>
+    <p class="subtitle">استيراد بيانات رحلاتك من التطبيق القديم</p>
+    
+    <div id="alert-container"></div>
+    
+    <div class="card">
+      <h3 style="margin-bottom: 15px; color: #667eea;">📊 البيانات المستوردة</h3>
+      <div class="data-row">
+        <span class="label">فترة الحافز</span>
+        <span class="value">17 - 23 نوفمبر 2025</span>
+      </div>
+      <div class="data-row">
+        <span class="label">عدد الرحلات</span>
+        <span class="value">20 رحلة</span>
+      </div>
+      <div class="data-row">
+        <span class="label">ساعات العمل</span>
+        <span class="value">12.17 ساعة</span>
+      </div>
+      <div class="data-row">
+        <span class="label">إجمالي الدخل</span>
+        <span class="value">382.62 ر.س</span>
+      </div>
+      <div class="data-row">
+        <span class="label">الحافز المتوقع</span>
+        <span class="value">60.00 ر.س (3 ر.س × 20 رحلة)</span>
+      </div>
+      <div class="data-row">
+        <span class="label">نسبة وقت الذروة</span>
+        <span class="value">61.9%</span>
+      </div>
+    </div>
 
-    <section class="table" aria-label="ملخص البيانات المستوردة">
-      <header class="table-header">
-        <span>البيانات المستوردة</span>
-        <span>📊 ملخص ثابت</span>
-      </header>
-      <div class="table-row">
-        <span class="label">فترة الحافز</span>
-        <span class="value">17 - 23 نوفمبر 2025</span>
-      </div>
-      <div class="table-row">
-        <span class="label">عدد الرحلات</span>
-        <span class="value">20 رحلة</span>
-      </div>
-      <div class="table-row">
-        <span class="label">ساعات العمل (الحقيقية)</span>
-        <span class="value">12.17 ساعة</span>
-      </div>
-      <div class="table-row">
-        <span class="label">إجمالي الدخل من الرحلات</span>
-        <span class="value">382.62 ر.س</span>
-      </div>
-      <div class="table-row">
-        <span class="label">الحافز المتوقع</span>
-        <span class="value">60.00 ر.س (3 ر.س × 20 رحلة)</span>
-      </div>
-      <div class="table-row">
-        <span class="label">نسبة وقت الذروة التقريبية</span>
-        <span class="value">61.9٪</span>
-      </div>
-    </section>
+    <div class="note">
+      <strong>📝 ملاحظة:</strong><br>
+      سيتم استيراد جميع الـ 20 رحلة بتفاصيلها الكاملة، وستظهر هذه المؤشرات فوراً في التطبيق بعد الضغط على زر الاستيراد.
+    </div>
 
-    <p class="note">
-      سيتم إنشاء أسبوع واحد داخل التطبيق بهذه القيم بالضبط:
-      <strong>ساعات = 12.17</strong>،
-      <strong>إجمالي الدخل = 382.62 ر.س</strong>،
-      <strong>نسبة الذروة ≈ 61.9٪</strong>.
-      هذا الأسبوع يستخدم كمرجع فقط، ولا يغيّر شروط أو إعدادات الأسبوع الحالي (الإثنين إلى الأحد).
-    </p>
+    <button class="btn" onclick="importAllData()">✅ استيراد جميع البيانات الآن</button>
+    <button class="btn btn-secondary" onclick="goToApp()">🏠 الذهاب للتطبيق مباشرة</button>
+  </div>
 
-    <div id="alert" class="alert" style="display:none"></div>
+  <script>
+    const STORAGE_KEY = "thrivve-tracker-v4.2-state";
+    const durations = [43.6, 19.8, 12.8, 29.3, 15.6, 119.7, 75.8, 48.9, 36.7, 65.4, 0.6, 7.0, 30.4, 17.7, 61.5, 21.5, 73.7, 21.5, 18.8, 9.8];
+    const fares = [22.54, 16.55, 8.26, 22.95, 11.44, 15.22, 37.89, 28.59, 19.97, 25.09, 7.91, 7.17, 21.39, 9.59, 34.09, 27.13, 42.32, 11.39, 12.13, 1.00];
+    const peakIndices = [1, 2, 5, 7, 8, 9, 10, 11, 13, 14, 15, 17, 18];
 
-    <section class="actions">
-      <button class="btn btn-primary" onclick="importAllData()">✅ استيراد بيانات الأسبوع الآن</button>
-      <button class="btn btn-secondary" onclick="goToApp()">🏠 الذهاب للتطبيق مباشرة</button>
-    </section>
 
-    <p class="footer">
-      يمكنك استخدام هذه الأداة مرة واحدة فقط لهذا الأسبوع التاريخي،
-      ثم الاعتماد على تسجيل الرحلات العادي لمتابعة الحافز الحالي.
-    </p>
-  </main>
+    function buildImportedState() {
+      const trips = [];
 
-  <script>
-    const STORAGE_KEY = "thrivve-tracker-v4.2-state";
+      for (let i = 0; i < durations.length; i++) {
+        const durationMinutes = durations[i];
+        const fare = fares[i];
+        const isPeak = peakIndices.includes(i);
 
-    // المدد بالدقائق من تقرير أوبر (مجموعها ≈ 730.10 دقيقة = 12.17 ساعة)
-    const durations = [
-      43.6, 19.8, 12.8, 29.3, 15.6,
-      119.7, 75.8, 48.9, 36.7, 65.4,
-      0.6, 7.0, 30.4, 17.7, 61.5,
-      21.5, 73.7, 21.5, 18.8, 9.8
-    ];
+        // 📌 الحل: إضافة 'Z' لتثبيت التوقيت (TimeZone) لمنع الزحزحة في الحساب
+        const base = new Date("2025-11-19T12:00:00Z"); 
+        const start = new Date(base.getTime() + i * 30 * 60000);
+        const end = new Date(start.getTime() + durationMinutes * 60000);
 
-    // قيم الرحلات بالريال (مجموعها = 382.62 ر.س)
-    const fares = [
-      22.54, 16.55, 8.26, 22.95, 11.44,
-      15.22, 37.89, 28.59, 19.97, 25.09,
-      7.91, 7.17, 21.39, 9.59, 34.09,
-      27.13, 42.32, 11.39, 12.13, 1.00
-    ];
+        trips.push({
+          id: Date.now() + i,
+          start: start.toISOString(),
+          end: end.toISOString(),
+          durationMinutes,
+          fare,
+          paymentType: "mixed",
+          cashCollected: 0,
+          isPeak
+        });
+      }
 
-    // مجموعة رحلات نعتبرها في وقت الذروة لتعطي ≈ 61.9٪
-    const peakIndices = [1, 2, 5, 7, 8, 9, 10, 11, 13, 14, 15, 17, 18];
+      // 📌 التصحيح النهائي لمنطق الأسبوع
+      const monday = new Date("2025-11-17T00:00:00Z");
+      monday.setHours(0, 0, 0, 0);
+      const sunday = new Date(monday);
+      sunday.setDate(sunday.getDate() + 6);
 
-    function buildImportedState() {
-      const trips = [];
+      return {
+        weekStart: monday.toISOString(),
+        weekEnd: sunday.toISOString(),
+        settings: {
+          minHours: 25,
+          minTripsBase: 35,
+          peakPercentRequired: 70,
+          bonusPerTrip: 3,
+          acceptRate: 93,
+          cancelRate: 1
+        },
+        trips,
+        activeTripStart: null,
+        peakMigratedV2: true
+      };
+    }
 
-      for (let i = 0; i < durations.length; i++) {
-        const durationMinutes = durations[i];
-        const fare = fares[i];
-        const isPeak = peakIndices.includes(i);
+    // ... (بقية دوال showAlert, importAllData, goToApp)
+    function showAlert(message, type) {
+      const el = document.getElementById("alert");
+      el.textContent = message;
+      el.className = "alert " + (type === "error" ? "alert-error" : "alert-success");
+      el.style.display = "block";
+    }
 
-        // تواريخ تقريبية ضمن الفترة فقط للعرض
-        const base = new Date("2025-11-19T12:00:00");
-        const start = new Date(base.getTime() + i * 30 * 60000);
-        const end = new Date(start.getTime() + durationMinutes * 60000);
+    function importAllData() {
+      try {
+        const state = buildImportedState();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        showAlert("✅ تم استيراد بيانات الأسبوع التاريخي بالقيم الصحيحة. سيتم فتح التطبيق الآن.", "success");
+        setTimeout(() => {
+          window.location.href = "./index.html";
+        }, 1600);
+      } catch (err) {
+        console.error(err);
+        showAlert("❌ حدث خطأ غير متوقع أثناء الاستيراد.", "error");
+      }
+    }
 
-        trips.push({
-          id: Date.now() + i,
-          start: start.toISOString(),
-          end: end.toISOString(),
-          durationMinutes,
-          fare,
-          paymentType: "mixed",
-          cashCollected: 0,
-          isPeak
-        });
-      }
+    function goToApp() {
+      window.location.href = "./index.html";
+    }
 
-      // 🔧 هنا نثبت الأسبوع: من الإثنين 17 إلى الأحد 23 بالضبط
-      const monday = new Date("2025-11-17T00:00:00");
-      monday.setHours(0, 0, 0, 0);
-      const sunday = new Date(monday);
-      sunday.setDate(sunday.getDate() + 6); // الأحد
-
-      return {
-        weekStart: monday.toISOString(),   // الإثنين 17/11/2025
-        weekEnd: sunday.toISOString(),     // الأحد 23/11/2025 (بدون انزلاق للاثنين)
-        settings: {
-          minHours: 25,
-          minTripsBase: 35,
-          peakPercentRequired: 70,
-          bonusPerTrip: 3,
-          acceptRate: 93,
-          cancelRate: 1
-        },
-        trips,
-        activeTripStart: null,
-        // لا نريد أن يعيد التطبيق حساب الذروة بناءً على isPeakTime
-        peakMigratedV2: true
-      };
-    }
-
-    function showAlert(message, type) {
-      const el = document.getElementById("alert");
-      el.textContent = message;
-      el.className = "alert " + (type === "error" ? "alert-error" : "alert-success");
-      el.style.display = "block";
-    }
-
-    function importAllData() {
-      try {
-        const state = buildImportedState();
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        showAlert("✅ تم استيراد بيانات الأسبوع التاريخي بالقيم الصحيحة. سيتم فتح التطبيق الآن.", "success");
-        setTimeout(() => {
-          window.location.href = "./index.html";
-        }, 1600);
-      } catch (err) {
-        console.error(err);
-        showAlert("❌ حدث خطأ غير متوقع أثناء الاستيراد.", "error");
-      }
-    }
-
-    function goToApp() {
-      window.location.href = "./index.html";
-    }
-  </script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // ...
+    });
+  </script>
 </body>
 </html>
