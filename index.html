@@ -15,6 +15,7 @@
         <div class="header-main">
           <div class="header-left">
             <div class="app-logo">ثرايف حافز</div>
+            <div id="current-day-info" class="week-range"></div>
             <div id="current-week-range" class="week-range"></div>
           </div>
           <button id="new-week-btn" class="btn btn-ghost small">أسبوع جديد</button>
@@ -100,6 +101,7 @@
                 <div class="metric-sub">
                   الحد الأدنى: <span id="metric-min-hours">25</span> ساعة
                 </div>
+                <div id="metric-hours-diff" class="metric-diff"></div>
                 <div class="metric-bar">
                   <div id="bar-hours" class="metric-bar-fill"></div>
                 </div>
@@ -113,6 +115,7 @@
                 <div class="metric-sub">
                   المطلوب ديناميكيًا: <span id="metric-required-trips">0</span> رحلة
                 </div>
+                <div id="metric-trips-diff" class="metric-diff"></div>
                 <div class="metric-bar">
                   <div id="bar-trips" class="metric-bar-fill"></div>
                 </div>
@@ -126,6 +129,7 @@
                 <div class="metric-sub">
                   الحد الأدنى: <span id="metric-peak-required">70</span>%
                 </div>
+                <div id="metric-peak-diff" class="metric-diff"></div>
                 <div class="metric-bar">
                   <div id="bar-peak" class="metric-bar-fill"></div>
                 </div>
@@ -297,6 +301,29 @@
               القبول والإلغاء يمكنك تحديثها متى شئت حسب ما يظهر في تطبيق أوبر.
             </p>
           </section>
+
+          <section class="card">
+            <div class="card-header">
+              <h2>إدارة البيانات</h2>
+            </div>
+            <p class="card-note">
+              يمكنك هنا تصدير نسخة احتياطية من بياناتك أو استيرادها يدويًا عند الحاجة أو عند نقل
+              بياناتك لجهاز آخر.
+            </p>
+            <div class="form-group">
+              <button id="export-state-btn" type="button" class="btn btn-secondary full">
+                💾 تصدير البيانات إلى نص
+              </button>
+            </div>
+            <div class="form-group">
+              <textarea id="state-json-area" rows="6" class="input" style="width: 100%; resize: vertical;"></textarea>
+            </div>
+            <div class="form-group">
+              <button id="import-state-btn" type="button" class="btn btn-primary full">
+                📥 استيراد البيانات من النص أعلاه
+              </button>
+            </div>
+          </section>
         </section>
 
         <!-- شاشة التقرير -->
@@ -414,17 +441,17 @@
         <div class="sheet-section">
           <p class="sheet-section-label">لوحة الأرقام</p>
           <div id="sheet-keypad" class="keypad">
-            <button data-key="7">7</button>
-            <button data-key="8">8</button>
-            <button data-key="9">9</button>
-            <button data-key="4">4</button>
-            <button data-key="5">5</button>
-            <button data-key="6">6</button>
             <button data-key="1">1</button>
             <button data-key="2">2</button>
             <button data-key="3">3</button>
-            <button data-key="0" class="key-wide">0</button>
+            <button data-key="4">4</button>
+            <button data-key="5">5</button>
+            <button data-key="6">6</button>
+            <button data-key="7">7</button>
+            <button data-key="8">8</button>
+            <button data-key="9">9</button>
             <button data-key=".">.</button>
+            <button data-key="0">0</button>
             <button data-key="back">⌫</button>
           </div>
         </div>
